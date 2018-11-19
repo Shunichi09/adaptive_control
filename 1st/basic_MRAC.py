@@ -27,7 +27,7 @@ class FirstOrderSystem():
         """
         self.state = init_state
         self.a = a
-        self.b = a
+        self.b = b
         self.history_state = [init_state]
 
     def update_state(self, u, dt=0.01):
@@ -46,6 +46,9 @@ class FirstOrderSystem():
         k3 = dt * self._func(self.state + k2, u)
 
         self.state +=  (k0 + 2 * k1 + 2 * k2 + k3) / 6.0
+
+        # for oylar
+        # self.state += k0
 
         # save
         self.history_state.append(self.state)
@@ -156,6 +159,13 @@ class BasicMRAC():
         self.theta_2 += (k0[2] + 2 * k1[2] + 2 * k2[2] + k3[2]) / 6.0
         self.u_2 += (k0[3] + 2 * k1[3] + 2 * k2[3] + k3[3]) / 6.0
 
+        # for oylar
+        """
+        self.theta_1 += k0[0]
+        self.u_1 += k0[1]
+        self.theta_2 += k0[2]
+        self.u_2 += k0[3]
+        """
         # calc input
         self.input = self.theta_1 * r + self.theta_2 * y
 
@@ -250,27 +260,32 @@ def main():
     simulation_iterations = int(simulation_time / dt) # dt is 0.01
 
     history_error = [0.0]
+    history_r = [0.0]
 
     for i in range(1, simulation_iterations): # skip the first
         # reference input
         r = math.sin(dt * i)
         # update reference
-        reference_model.update_state(r)
+        reference_model.update_state(r, dt=dt)
         # update plant
-        plant.update_state(controller.input)
+        plant.update_state(controller.input, dt=dt)
 
         # calc error
         e = reference_model.state - plant.state
         y = plant.state
         history_error.append(e)
+        history_r.append(r)
 
         # make the gradient
-        controller.update_input(e, r, y)
+        controller.update_input(e, r, y, dt=dt)
 
     # fig
-    plt.plot(range(simulation_iterations), plant.history_state, label="plant")
-    plt.plot(range(simulation_iterations), reference_model.history_state, label="model")
-    plt.plot(range(simulation_iterations), history_error, label="error")
+    plt.plot(range(simulation_iterations), plant.history_state, label="plant y", linestyle="dashed")
+    plt.plot(range(simulation_iterations), reference_model.history_state, label="model reference")
+    plt.plot(range(simulation_iterations), history_error, label="error", linestyle="dashdot")
+    # plt.plot(range(simulation_iterations), history_r, label="error")
+    plt.xlabel("iterations")
+    plt.ylabel("y")
     plt.legend()
     plt.show()
 
@@ -279,8 +294,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
