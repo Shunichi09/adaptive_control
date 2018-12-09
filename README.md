@@ -9,8 +9,8 @@ You can see the detail information in the each folders
 ## 1st (What is adaptive control)
 Implementing the MIT control methods
 
-## 2nd (Lyapnov)
-
+## 2nd (Lyapunov)
+Implementing the Lyapunov control methods
 
 # Requirement
 - python 3.5 or more
