@@ -13,6 +13,8 @@ class FirstOrderSystem():
         parameter of the system
     b : float
         parameter of the system
+    history_state : list
+        time history of state
     """
     def __init__(self, a, b, init_state=0.0):
         """
@@ -22,7 +24,7 @@ class FirstOrderSystem():
             parameter of the system
         b : float
             parameter of the system
-        init_state : float
+        init_state : float, optional
             initial state of system default is 0.0
         """
         self.state = init_state
@@ -31,12 +33,12 @@ class FirstOrderSystem():
         self.history_state = [init_state]
 
     def update_state(self, u, dt=0.01):
-        """
+        """calculating input
         Parameters
         ------------
         u : float
             input of system in some cases this means the reference
-        dt : float in seconds
+        dt : float in seconds, optional
             sampling time of simulation, default is 0.01 [s]
         """
         # solve Runge-Kutta
@@ -83,6 +85,8 @@ class LyapunovMRAC():
         state of the controller
     theta_2 : float
         state of the controller
+    history_input : list
+        time history of input
     """
     def __init__(self, g_1, g_2, init_theta_1=0.0, init_theta_2=0.0, init_input=0.0):
         """
@@ -92,11 +96,11 @@ class LyapunovMRAC():
             parameter of the controller
         g_2 : float
             parameter of the controller
-        theta_1 : float
+        theta_1 : float, optional
             state of the controller default is 0.0
-        theta_2 : float
+        theta_2 : float, optional
             state of the controller default is 0.0
-        init_input : float
+        init_input : float, optional
             initial input of controller default is 0.0
         """
         self.input = init_input
@@ -121,7 +125,7 @@ class LyapunovMRAC():
             reference value
         y : float
             output the model value
-        dt : float in seconds
+        dt : float in seconds, optional
             sampling time of simulation, default is 0.01 [s]
         """
         # for theta 1, theta 1 dot, theta 2, theta 2 dot
@@ -243,17 +247,18 @@ def main():
         controller.update_input(e, r, y, dt=dt)
 
     # fig
-    plt.plot(range(simulation_iterations), plant.history_state, label="plant y", linestyle="dashed")
-    plt.plot(range(simulation_iterations), reference_model.history_state, label="model reference")
-    plt.plot(range(simulation_iterations), history_error, label="error", linestyle="dashdot")
+    plt.plot(np.arange(simulation_iterations)*dt, plant.history_state, label="plant y", linestyle="dashed")
+    plt.plot(np.arange(simulation_iterations)*dt, reference_model.history_state, label="model reference")
+    plt.plot(np.arange(simulation_iterations)*dt, history_error, label="error", linestyle="dashdot")
     # plt.plot(range(simulation_iterations), history_r, label="error")
-    plt.xlabel("iterations")
+    plt.xlabel("time [s]")
     plt.ylabel("y")
     plt.legend()
     plt.show()
 
-    plt.plot(range(simulation_iterations), controller.history_input)
-    plt.show()
+    # input
+    # plt.plot(np.arange(simulation_iterations)*dt, controller.history_input)
+    # plt.show()
 
 if __name__ == "__main__":
     main()

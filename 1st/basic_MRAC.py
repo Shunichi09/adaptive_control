@@ -13,6 +13,8 @@ class FirstOrderSystem():
         parameter of the system
     b : float
         parameter of the system
+    history_state : list
+        time history of state
     """
     def __init__(self, a, b, init_state=0.0):
         """
@@ -22,7 +24,7 @@ class FirstOrderSystem():
             parameter of the system
         b : float
             parameter of the system
-        init_state : float
+        init_state : float, optional
             initial state of system default is 0.0
         """
         self.state = init_state
@@ -36,7 +38,7 @@ class FirstOrderSystem():
         ------------
         u : float
             input of system in some cases this means the reference
-        dt : float in seconds
+        dt : float in seconds, optional
             sampling time of simulation, default is 0.01 [s]
         """
         # solve Runge-Kutta
@@ -46,9 +48,6 @@ class FirstOrderSystem():
         k3 = dt * self._func(self.state + k2, u)
 
         self.state +=  (k0 + 2 * k1 + 2 * k2 + k3) / 6.0
-
-        # for oylar
-        # self.state += k0
 
         # save
         self.history_state.append(self.state)
@@ -83,6 +82,8 @@ class BasicMRAC():
         state of the controller
     theta_2 : float
         state of the controller
+    history_input : list
+        time history of input
     """
     def __init__(self, a, alpha_1, alpha_2, init_theta_1=0.0, init_theta_2=0.0, init_input=0.0):
         """
@@ -94,11 +95,11 @@ class BasicMRAC():
             parameter of the controller
         alpha_2 : float
             parameter of the controller
-        theta_1 : float
+        theta_1 : float, optional
             state of the controller default is 0.0
-        theta_2 : float
+        theta_2 : float, optional
             state of the controller default is 0.0
-        init_input : float
+        init_input : float, optional
             initial input of controller default is 0.0
         """
         self.input = init_input
@@ -118,7 +119,7 @@ class BasicMRAC():
         self.history_input = [init_input]
 
     def update_input(self, e, r, y, dt=0.01):
-        """
+        """calculating the input
         Parameters
         ------------
         e : float
@@ -127,7 +128,7 @@ class BasicMRAC():
             reference value
         y : float
             output the model value
-        dt : float in seconds
+        dt : float in seconds, optional
             sampling time of simulation, default is 0.01 [s]
         """
         # for theta 1, theta 1 dot, theta 2, theta 2 dot
@@ -159,13 +160,6 @@ class BasicMRAC():
         self.theta_2 += (k0[2] + 2 * k1[2] + 2 * k2[2] + k3[2]) / 6.0
         self.u_2 += (k0[3] + 2 * k1[3] + 2 * k2[3] + k3[3]) / 6.0
 
-        # for oylar
-        """
-        self.theta_1 += k0[0]
-        self.u_1 += k0[1]
-        self.theta_2 += k0[2]
-        self.u_2 += k0[3]
-        """
         # calc input
         self.input = self.theta_1 * r + self.theta_2 * y
 
@@ -184,6 +178,12 @@ class BasicMRAC():
             state of the controller
         u_2 : float
             dummy state of the controller
+        e : float
+            error value of system
+        r : float
+            reference value
+        y : float
+            output the model value
         """
         y_dot = u_1
         return y_dot
@@ -200,6 +200,12 @@ class BasicMRAC():
             state of the controller
         u_2 : float
             dummy state of the controller
+        e : float
+            error value of system
+        r : float
+            reference value
+        y : float
+            output the model value
         """
         y_dot = -self.a * u_1 + self.alpha_1 * r * e
         return y_dot
@@ -216,10 +222,14 @@ class BasicMRAC():
             state of the controller
         u_2 : float
             dummy state of the controller
+        e : float
+            error value of system
+        r : float
+            reference value
+        y : float
+            output the model value
         """
-
         y_dot = u_2
-
         return y_dot
 
     def _func_u_2(self, theta_1, u_1, theta_2, u_2, e, r, y):
@@ -234,6 +244,12 @@ class BasicMRAC():
             state of the controller
         u_2 : float
             dummy state of the controller
+        e : float
+            error value of system
+        r : float
+            reference value
+        y : float
+            output the model value
         """
         y_dot = -self.a * u_2 + self.alpha_2 * y * e
         return y_dot
@@ -280,17 +296,18 @@ def main():
         controller.update_input(e, r, y, dt=dt)
 
     # fig
-    plt.plot(range(simulation_iterations), plant.history_state, label="plant y", linestyle="dashed")
-    plt.plot(range(simulation_iterations), reference_model.history_state, label="model reference")
-    plt.plot(range(simulation_iterations), history_error, label="error", linestyle="dashdot")
+    plt.plot(np.arange(simulation_iterations)*dt, plant.history_state, label="plant y", linestyle="dashed")
+    plt.plot(np.arange(simulation_iterations)*dt, reference_model.history_state, label="model reference")
+    plt.plot(np.arange(simulation_iterations)*dt, history_error, label="error", linestyle="dashdot")
     # plt.plot(range(simulation_iterations), history_r, label="error")
-    plt.xlabel("iterations")
+    plt.xlabel("time [s]")
     plt.ylabel("y")
     plt.legend()
     plt.show()
 
-    plt.plot(range(simulation_iterations), controller.history_input)
-    plt.show()
+    # input
+    # plt.plot(np.arange(simulation_iterations)*dt, controller.history_input)
+    # plt.show()
 
 if __name__ == "__main__":
     main()
